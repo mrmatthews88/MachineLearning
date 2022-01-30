@@ -16,22 +16,20 @@ namespace WebApplication1ML.Model
 
         // For more info on consuming ML.NET models, visit https://aka.ms/mlnet-consume
         // Method for consuming model in your app
-
-
         public static ModelOutput Predict(ModelInput input)
         {
             ModelOutput result = PredictionEngine.Value.Predict(input);
             return result;
         }
 
-        public static Dictionary<string, float> getScoreDictionary(ModelInput input)
+        public static List<ScoreOutput> getScoreDictionary(ModelInput input)
         {
             return getScoreDictionary(Predict(input));
         }
 
-        public static Dictionary<string, float> getScoreDictionary(ModelOutput result)
+        public static List<ScoreOutput> getScoreDictionary(ModelOutput result)
         {
-            Dictionary<string, float> output = new Dictionary<string, float>();
+            List<ScoreOutput> output = new List<ScoreOutput>();
             try
             {
                 var Score = PredictionEngine.Value.OutputSchema["Score"];
@@ -40,14 +38,14 @@ namespace WebApplication1ML.Model
                 var labels = buf.DenseValues().Select(x => x.ToString()).ToList();
                 for (int i = 0; i < labels.Count; i++)
                 {
-                    output.Add(labels[i], result.Score[i]);
+                    output.Add(new ScoreOutput(labels[i], result.Score[i]));
                 }
 
             }
             catch (Exception) { }
+            output.OrderByDescending(item => item.Score);
             return output;
         }
-
         public static PredictionEngine<ModelInput, ModelOutput> CreatePredictionEngine()
         {
             // Create new MLContext
@@ -57,7 +55,21 @@ namespace WebApplication1ML.Model
             string modelPath = @"C:\Users\incen\AppData\Local\Temp\MLVSTools\WebApplication1ML\WebApplication1ML.Model\MLModel.zip";
             ITransformer mlModel = mlContext.Model.Load(modelPath, out var modelInputSchema);
             var predEngine = mlContext.Model.CreatePredictionEngine<ModelInput, ModelOutput>(mlModel);
+
             return predEngine;
         }
+    }
+
+    public class ScoreOutput
+    {
+        public ScoreOutput(string _label, float _score)
+        {
+            Label = _label;
+            Score = _score;
+            ScorePercent = (_score / 1) * 100;
+        }
+        public float Score { get; private set; }
+        public float ScorePercent { get; private set; }
+        public string Label { get; private set; }
     }
 }
