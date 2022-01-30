@@ -22,12 +22,12 @@ namespace WebApplication1ML.Model
             return result;
         }
 
-        public static List<ScoreOutput> getScoreDictionary(ModelInput input)
+        public static List<ScoreOutput> GetScores(ModelInput input)
         {
-            return getScoreDictionary(Predict(input));
+            return getScores(Predict(input));
         }
 
-        public static List<ScoreOutput> getScoreDictionary(ModelOutput result)
+        public static List<ScoreOutput> GetScores(ModelOutput result)
         {
             List<ScoreOutput> output = new List<ScoreOutput>();
             try
